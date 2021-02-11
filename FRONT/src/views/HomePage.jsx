@@ -25,6 +25,21 @@ const HomePage = () => {
   const [timer, SetTimer] = useState(0);
   const [isGameInProgress, SetGameInProgress] = useState(false);
   const [scoreList, SetScoreList] = useState([]);
+  const [difficulties, SetDifficulties] = useState([
+    {
+      label: "facile",
+      value: 1300,
+    },
+    {
+      label: "normal",
+      value: 800,
+    },
+    {
+      label: "difficile",
+      value: 400,
+    },
+  ]);
+  const [activeDifficulty, SetDifficulty] = useState(800);
 
   const bloc = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
@@ -97,9 +112,9 @@ const HomePage = () => {
 
   const newTurn = async (pattern) => {
     for (let i = 0; i < pattern.length; i++) {
-      await sleep(500);
+      await sleep(100);
       setActiveColor({ id: pattern[i], color: "red" });
-      await sleep(1000);
+      await sleep(activeDifficulty);
       setActiveColor({ id: pattern[i], color: "" });
     }
   };
@@ -150,6 +165,16 @@ const HomePage = () => {
               );
             })}
           </ul>
+          <div>Difficulté</div>
+          <select>
+            {difficulties.map((items, i) => {
+              return (
+                <option onClick={() => SetDifficulty(items.value)}>
+                  {items.label}
+                </option>
+              );
+            })}
+          </select>
         </ScoreBoard>
       </HomeContainer>
       <p style={{ width: 400 }}>
