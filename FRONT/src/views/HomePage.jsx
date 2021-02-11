@@ -1,21 +1,59 @@
 import React, { useState, useEffect } from "react";
-import { HomeContainer } from "../style/views/HomePage.style";
+import {
+  HomeContainer,
+  ButtonList,
+  Button,
+} from "../style/views/HomePage.style";
 import SimonBloc from "../components/SimonBloc";
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
 
+let x;
 let initState = getRandomInt(8);
 
 const HomePage = () => {
   const [patternToDo, SetPatternToDo] = useState([initState]);
   const [userPattern, SetUserPattern] = useState([]);
-  const [state, SetState] = useState("");
-  const [level, SetUp] = useState(1);
+  const [state, SetState] = useState("Lancez une partie");
+  const [level, SetLevel] = useState(1);
+  const [activeColor, setActiveColor] = useState("");
+  const [timer, SetTimer] = useState(0);
+  const [isGameInProgress, SetGameInProgress] = useState(false);
 
-  let bloc = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-  console.log(patternToDo);
+  const bloc = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+
+  const reInit = () => {
+    SetUserPattern([]);
+    SetPatternToDo([getRandomInt(8)]);
+    SetLevel(1);
+    SetTimer(0);
+    setActiveColor("");
+    SetGameInProgress(false);
+    clearInterval(x);
+    SetState("Lancez une partie");
+  };
+
+  const StartGame = () => {
+    SetState("Partie en cours...");
+    SetGameInProgress(true);
+    let startDate = Date.now();
+    x = setInterval(function () {
+      let now = new Date().getTime();
+      let distance = now - startDate;
+
+      SetTimer(
+        Math.floor(distance / (1000 * 60 * 60)) +
+          "h : " +
+          Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)) +
+          "m : " +
+          Math.floor((distance % (1000 * 60)) / 1000) +
+          "s"
+      );
+    }, 1000);
+    newTurn();
+  };
 
   useEffect(() => {
     console.log("userPattern : " + userPattern);
@@ -25,17 +63,30 @@ const HomePage = () => {
       patternToDo[userPattern.length - 1]
     ) {
       if (userPattern.length === patternToDo.length) {
-        SetUp(level + 1);
+        SetLevel(level + 1);
         SetPatternToDo([...patternToDo, getRandomInt(8)]);
         SetUserPattern([]);
-      } else {
-        SetState("Partie en cours");
+        newTurn();
       }
     } else {
       SetState("Perdu");
+      clearInterval(x);
     }
-    // console.log(patternToDo);
   }, [userPattern]);
+
+  const newTurn = async () => {
+    for (let i = 0; i < patternToDo.length; i++) {
+      console.log(patternToDo[i]);
+      await sleep(500);
+      setActiveColor({ id: patternToDo[i], color: "red" });
+      await sleep(1000);
+      setActiveColor({ id: patternToDo[i], color: "" });
+    }
+  };
+
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
   const handleClick = (val) => {
     SetUserPattern([...userPattern, val]);
@@ -49,12 +100,22 @@ const HomePage = () => {
               action={() => handleClick(items)}
               key={`bloc_number_${i}`}
               val={items}
+              color={activeColor.id === items ? activeColor.color : ""}
             ></SimonBloc>
           );
         })}
       </HomeContainer>
       <div>{state}</div>
       <div>Level : {level}</div>
+      <div>Timer : {timer}</div>
+      <ButtonList>
+        <Button onClick={StartGame} disabled={isGameInProgress}>
+          Start Game
+        </Button>
+        <Button onClick={reInit} disabled={!isGameInProgress}>
+          Stop Game
+        </Button>
+      </ButtonList>
     </>
   );
 };
