@@ -145,7 +145,7 @@ const HomePage = () => {
             {scoreList.map((items, i) => {
               return (
                 <li>
-                  {i} : {items.bestScore / 1000} s
+                  {i} : {(items.bestScore / 1000).toFixed(2)} s
                 </li>
               );
             })}
